@@ -1,43 +1,29 @@
-# XCP-ng guest tools for RancherOS 
+# XCP-ng guest tools for CoreOS VMs
 
 XCP-ng is a virtualization platform. You can read more about it here: [https://xcp-ng.org](https://xcp-ng.org)
 
-RancherOS is a minimalist linux distribution, designed to run docker. More info here: [https://rancher.com/docs/os/v1.x/en/](https://rancher.com/docs/os/v1.x/en/)
+Fedora CoreOS is a minimal OS with automatic updates for container workloads. Scalable and secure. More info here: [https://fedoraproject.org/coreos/](https://fedoraproject.org/coreos/)
 
-This repository has an alpine linux docker image that contains the XCP-ng [guest tools](https://xcp-ng.org/docs/guests.html#alpine), configured for use within RancherOS. It was created to speed up the configuration process of a virtualized RancherOS VM within XCP-ng.
+This repository has an alpine linux docker image that contains the XCP-ng [guest tools](https://xcp-ng.org/docs/guests.html#alpine), configured to expose telemetry to the xcp-ng host. It was created to speed up the configuration process of a virtualized RancherOS VM within XCP-ng.
+The code is a fork of the [Image: XCP-ng guest tools for RancherOS](https://github.com/GeoMSK/ros-xe-guest-utilities)
 
-# Installation (From [Docker Hub](https://hub.docker.com/r/geomsk/ros-xe-guest-utilities))
-Add the following to your `cloud-config.yml` when [installing](https://rancher.com/docs/os/v1.x/en/installation/server/install-to-disk/) RancherOS for the first time. Example command: `sudo ros install -c cloud-config.yml -d /dev/sdX`
+# Installation (From [GitHub Container Repo](https://github.com/wus-technik/coreos-xe-guest-utilities/pkgs/container/coreos-xe-guest-utilities))
 
-If you have an existing installation you can edit the `/var/lib/rancher/conf/cloud-config.d/user_config.yml` file and reboot.
+Run with a very simple docker-compose file:
 
 ``` yaml
-rancher:
-  services:
-    ros-xe-guest-utilities:
-      container_name: ros-xe-guest-utilities
-      image: geomsk/ros-xe-guest-utilities
-      net: host
-      privileged: true
-      labels:
-        io.rancher.os.scope: system
-        io.rancher.os.after: network
+services:
+  xe-guest-utilities:
+    container_name: xe-guest-utilities
+    image: ghcr.io/wus-technik/coreos-xe-guest-utilities:latest
+    network_mode: host
+    privileged: true
+    restart: always
 ```
 
-Now everytime your RancherOS VM boots, the guest tools will run as well.
+The guest tools will be recognized by the XCP-ng host without installations on the CoreOS VM.
+Tested with the podman container runtime shipped with the current Fedora CoreOS 41+.
 
+# Versions
 
-# Run Manually (Testing)
-
-This is not required if you performed the instalation steps above. This is only for testing. If you want to test it first without touching your cloud-config, simply run it as a docker container.
-
-``` bash
-docker run -d --net=host --privileged=true geomsk/ros-xe-guest-utilities
-```
-
-When you finish testing you can remove it
-``` bash
-docker stop `docker ps | grep geomsk/ros-xe-guest-utilities | awk '{printf $1}'`
-docker container rm `docker container ls -a | grep geomsk/ros-xe-guest-utilities | awk '{printf $1}'`
-docker image rm `docker image ls | grep geomsk/ros-xe-guest-utilities | awk '{printf $3}'`
-```
+- 20250314: xe-guest-utilities-8.4.0-r2
